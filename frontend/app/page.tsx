@@ -7,6 +7,7 @@ const API_URL = 'https://appointment-booking-web-zj1z.onrender.com'
 export default function Home() {
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
+  const [minDate, setMinDate] = useState('')
   const [time, setTime] = useState('')
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [message, setMessage] = useState('')
@@ -24,6 +25,9 @@ export default function Home() {
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true)
 
   useEffect(() => {
+    const today = new Date()
+    const localDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    setMinDate(localDate)
     loadAppointments()
   }, [])
 
@@ -112,8 +116,8 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error booking appointment:', error)
-     setMessage('Unable to connect to the booking server.')
-     setMessageType('error')
+      setMessage('Unable to connect to the booking server.')
+      setMessageType('error')
     } finally {
       setIsBooking(false)
     }
@@ -165,7 +169,7 @@ export default function Home() {
               <input
                 id="date"
                 type="date"
-                min={new Date().toISOString().split('T')[0]}
+                min={minDate || undefined}
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
                 required
