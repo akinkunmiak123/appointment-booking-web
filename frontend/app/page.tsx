@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react'
 
-const API_URL = 'http://127.0.0.1:8000'
+const API_URL = 'https://appointment-booking-web-zj1z.onrender.com'
 
 export default function Home() {
   const [name, setName] = useState('')
