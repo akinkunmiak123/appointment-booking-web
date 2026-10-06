@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -9,8 +9,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000",
-    "https://appointment-booking-web-liart.vercel.app/"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://appointment-booking-web-liart.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,14 +29,17 @@ AVAILABLE_SLOTS = [
     "16:00"
 ]
 
+
 class Appointment(BaseModel):
     name: str
     date: str
     time: str
 
+
 def load_appointments():
     with open("appointments.json", "r") as file:
         return json.load(file)
+
 
 def validate_date(date):
     try:
@@ -61,23 +66,26 @@ def create_appointment(appointment: Appointment):
     appointments = load_appointments()
 
     if not validate_date(appointment.date):
-        return {
-            "message": "Invalid date. Use YYYY-MM-DD format."
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid date. Use YYYY-MM-DD format."
+        )
 
     if appointment.time not in AVAILABLE_SLOTS:
-        return {
-            "message": "Invalid time slot."
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid time slot."
+        )
 
     for existing in appointments:
         if (
             existing["date"] == appointment.date
             and existing["time"] == appointment.time
         ):
-            return {
-                "message": "That time slot is already booked"
-            }
+            raise HTTPException(
+                status_code=409,
+                detail="That time slot is already booked"
+            )
 
     if appointments:
         new_id = max(item["id"] for item in appointments) + 1
